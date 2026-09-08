@@ -1,0 +1,40 @@
+{
+  "name": "toyfoundry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A child's drawing becomes a 3D printed toy.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
+    "firebase": "^11.0.0",
+    "firebase-admin": "^13.5.0",
+    "jszip": "^3.10.1",
+    "next": "15.5.9",
+    "nodemailer": "^7.0.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.34.3",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^22.10.0",
+    "@types/nodemailer": "^8.0.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.169.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.9",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8"
+  }
+}
