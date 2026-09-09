@@ -146,6 +146,29 @@ whole flow walkable, on a preview deploy, with no keys and no spend.
 
 ---
 
+## The hosted demo
+
+There is a live page that runs the print engine in the browser — change
+the character, change the ordered size, watch the checks and the
+millimetres move:
+
+**https://claude.ai/code/artifact/30d542da-4a33-443c-aada-2ba1d6aeabf3**
+
+It is not a mockup and not a fork: `src/demo-entry.ts` re-exports the
+pure half of this codebase and esbuild bundles it into the page, so the
+mesh a visitor turns around is welded, repaired, measured and written to
+STL by the same functions the server calls.
+
+```bash
+npx esbuild src/demo-entry.ts --bundle --format=iife --global-name=TF \
+  --minify --target=es2020 --outfile=engine.js
+```
+
+What the page cannot do is the two AI calls and checkout — those need
+keys and a server, and the page says so on itself.
+
+---
+
 ## Data, and who can read it
 
 Two flat Firestore collections, both reachable **only** through the API
