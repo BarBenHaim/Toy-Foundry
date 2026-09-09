@@ -1,0 +1,1559 @@
+<title>ToyFoundry Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+    /* ── Tokens ───────────────────────────────────────────────────
+       The product's own identity: one violet-to-coral gradient that
+       means "this is the magic bit", everything else in ink and paper.
+       Mint and amber are semantic only — they mean a print check
+       passed or warned, and appear nowhere decorative. */
+    :root {
+        --paper: #faf8ff;
+        --surface: #ffffff;
+        --surface-2: #f3f0fb;
+        --ink: #14121f;
+        --ink-2: #55506b;
+        --ink-3: #8b85a3;
+        --line: #e6e1f4;
+        --line-strong: #d6cfec;
+        --violet: #6c4cf1;
+        --violet-soft: #efeafe;
+        --coral: #f5476b;
+        --pass: #12996f;
+        --pass-soft: #e2f7ef;
+        --warn: #a56200;
+        --warn-soft: #fdf1dd;
+        --grad: linear-gradient(115deg, #6c4cf1, #f5476b);
+        --stage-top: #ffffff;
+        --stage-bottom: #e9e2ff;
+        --shadow-s: 0 1px 2px rgba(20, 18, 31, .05), 0 3px 10px rgba(20, 18, 31, .04);
+        --shadow-m: 0 2px 6px rgba(20, 18, 31, .05), 0 22px 44px -20px rgba(58, 36, 150, .28);
+        --radius: 18px;
+        color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --paper: #0e0c16;
+            --surface: #171426;
+            --surface-2: #1f1b32;
+            --ink: #f4f1ff;
+            --ink-2: #b6afd2;
+            --ink-3: #7d769b;
+            --line: #2a2440;
+            --line-strong: #3a3256;
+            --violet: #9c85ff;
+            --violet-soft: #241d3f;
+            --coral: #ff6b8a;
+            --pass: #35d9a4;
+            --pass-soft: #123329;
+            --warn: #ffc043;
+            --warn-soft: #33270e;
+            --stage-top: #221c3a;
+            --stage-bottom: #100d1c;
+            --shadow-s: 0 1px 2px rgba(0, 0, 0, .4), 0 3px 10px rgba(0, 0, 0, .3);
+            --shadow-m: 0 2px 6px rgba(0, 0, 0, .45), 0 22px 44px -20px rgba(0, 0, 0, .7);
+            color-scheme: dark;
+        }
+    }
+
+    :root[data-theme="dark"] {
+        --paper: #0e0c16;
+        --surface: #171426;
+        --surface-2: #1f1b32;
+        --ink: #f4f1ff;
+        --ink-2: #b6afd2;
+        --ink-3: #7d769b;
+        --line: #2a2440;
+        --line-strong: #3a3256;
+        --violet: #9c85ff;
+        --violet-soft: #241d3f;
+        --coral: #ff6b8a;
+        --pass: #35d9a4;
+        --pass-soft: #123329;
+        --warn: #ffc043;
+        --warn-soft: #33270e;
+        --stage-top: #221c3a;
+        --stage-bottom: #100d1c;
+        --shadow-s: 0 1px 2px rgba(0, 0, 0, .4), 0 3px 10px rgba(0, 0, 0, .3);
+        --shadow-m: 0 2px 6px rgba(0, 0, 0, .45), 0 22px 44px -20px rgba(0, 0, 0, .7);
+        color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Manrope, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3 {
+        font-family: "Bricolage Grotesque", Manrope, ui-sans-serif, system-ui, sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        line-height: 1.05;
+        text-wrap: balance;
+        margin: 0;
+    }
+    h1 { font-size: clamp(30px, 4.4vw, 46px); }
+    h2 { font-size: clamp(21px, 2.4vw, 26px); }
+    h3 { font-size: 15px; letter-spacing: -0.01em; }
+    p { margin: 0; }
+
+    .wrap {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 0 22px 72px;
+    }
+
+    /* ── Masthead ────────────────────────────────────────────────── */
+    .masthead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 20px 0 26px;
+        flex-wrap: wrap;
+    }
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-weight: 700;
+        font-size: 17px;
+        letter-spacing: -0.02em;
+    }
+    .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--grad);
+        display: grid;
+        place-items: center;
+        flex: 0 0 30px;
+    }
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid var(--line-strong);
+        background: var(--surface);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink-2);
+    }
+    .chip b { color: var(--ink); font-weight: 700; }
+    .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--pass);
+        flex: 0 0 7px;
+    }
+
+    /* ── Thesis ──────────────────────────────────────────────────── */
+    .thesis {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+        gap: 34px;
+        align-items: end;
+        padding-bottom: 26px;
+    }
+    .thesis p {
+        color: var(--ink-2);
+        max-width: 62ch;
+        margin-top: 14px;
+        font-size: 16px;
+    }
+    .thesis .aside {
+        border-left: 2px solid var(--violet);
+        padding: 2px 0 2px 16px;
+        font-size: 13.5px;
+        color: var(--ink-2);
+    }
+    .thesis .aside b { color: var(--ink); }
+    @media (max-width: 860px) {
+        .thesis { grid-template-columns: 1fr; align-items: start; gap: 20px; }
+    }
+
+    /* ── The bench ───────────────────────────────────────────────── */
+    .bench {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+        gap: 20px;
+        align-items: start;
+    }
+    @media (max-width: 940px) {
+        .bench { grid-template-columns: 1fr; }
+    }
+
+    .stage {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-m);
+        overflow: hidden;
+    }
+    .flow {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+    }
+    .flow-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+    .flow-thumb {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        border-radius: 10px;
+        border: 1px solid var(--line-strong);
+        background: var(--surface);
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+    }
+    .flow-thumb canvas, .flow-thumb svg, .flow-thumb img {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .flow-label {
+        min-width: 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+    }
+    .flow-label span {
+        display: block;
+        font-family: Manrope, sans-serif;
+        font-size: 13px;
+        letter-spacing: -0.01em;
+        text-transform: none;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .flow-arrow { color: var(--ink-3); font-size: 15px; }
+    @media (max-width: 620px) {
+        .flow { grid-template-columns: 1fr; gap: 12px; }
+        .flow-arrow { display: none; }
+    }
+
+    .viewport {
+        position: relative;
+        aspect-ratio: 4 / 3.15;
+        background: radial-gradient(120% 90% at 50% 22%, var(--stage-top), var(--stage-bottom));
+    }
+    .viewport canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+        cursor: grab;
+    }
+    .viewport canvas:active { cursor: grabbing; }
+    .viewport-note {
+        position: absolute;
+        left: 50%;
+        bottom: 12px;
+        transform: translateX(-50%);
+        font-size: 12px;
+        color: var(--ink-3);
+        background: color-mix(in srgb, var(--surface) 80%, transparent);
+        border-radius: 999px;
+        padding: 5px 13px;
+        pointer-events: none;
+    }
+    .viewport-busy {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: color-mix(in srgb, var(--surface) 55%, transparent);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink-2);
+        opacity: 0;
+        transition: opacity .15s;
+        pointer-events: none;
+    }
+    .viewport-busy.on { opacity: 1; }
+
+    /* ── Instrument panel ────────────────────────────────────────── */
+    .panel {
+        display: grid;
+        gap: 14px;
+    }
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px;
+    }
+    .card > header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .eyebrow {
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+    }
+
+    .field { display: grid; gap: 7px; margin-bottom: 13px; }
+    .field:last-child { margin-bottom: 0; }
+    .field > .eyebrow { margin: 0; }
+    .segmented {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    .segmented button {
+        flex: 1 1 auto;
+        min-width: 52px;
+        border: 1px solid var(--line-strong);
+        background: var(--surface);
+        color: var(--ink-2);
+        border-radius: 10px;
+        padding: 8px 10px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color .15s, color .15s, background .15s;
+    }
+    .segmented button:hover { border-color: var(--violet); color: var(--ink); }
+    .segmented button[aria-pressed="true"] {
+        border-color: transparent;
+        background: var(--grad);
+        color: #fff;
+    }
+    .segmented button:focus-visible,
+    .swatch:focus-visible,
+    .ghost:focus-visible,
+    .filebtn:focus-visible {
+        outline: 2px solid var(--violet);
+        outline-offset: 2px;
+    }
+
+    .swatches { display: flex; gap: 7px; flex-wrap: wrap; }
+    .swatch {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        border: 2px solid transparent;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
+        cursor: pointer;
+        padding: 0;
+    }
+    .swatch[aria-pressed="true"] { border-color: var(--ink); }
+
+    .filebtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px dashed var(--line-strong);
+        background: var(--surface-2);
+        color: var(--ink-2);
+        border-radius: 11px;
+        padding: 10px 13px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+    }
+    .filebtn:hover { border-color: var(--violet); color: var(--ink); }
+    .filebtn input { display: none; }
+
+    /* ── Print report: the engineering voice ─────────────────────── */
+    .verdict {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 999px;
+        padding: 4px 11px;
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: .02em;
+    }
+    .verdict.ok { background: var(--pass-soft); color: var(--pass); }
+    .verdict.no { background: var(--warn-soft); color: var(--warn); }
+
+    .checks { display: grid; gap: 9px; }
+    .check {
+        display: grid;
+        grid-template-columns: 16px 1fr;
+        gap: 10px;
+        align-items: start;
+        font-size: 13.2px;
+        line-height: 1.45;
+        color: var(--ink-2);
+    }
+    .check .glyph {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        display: grid;
+        place-items: center;
+        font-size: 10px;
+        font-weight: 700;
+        margin-top: 2px;
+        color: #fff;
+    }
+    .check.pass .glyph { background: var(--pass); }
+    .check.warn .glyph { background: var(--warn); }
+    .check.fail .glyph { background: var(--coral); }
+
+    .specs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+    }
+    .spec .eyebrow { display: block; margin-bottom: 2px; }
+    .spec b {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-variant-numeric: tabular-nums;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+    }
+
+    .price-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 13.5px;
+        color: var(--ink-2);
+    }
+    .price-row b {
+        font-family: "IBM Plex Mono", monospace;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+        font-size: 17px;
+        font-weight: 500;
+    }
+
+    details.prompt {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 14px 16px;
+    }
+    details.prompt summary {
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13.5px;
+        color: var(--ink-2);
+        list-style: none;
+    }
+    details.prompt summary::-webkit-details-marker { display: none; }
+    details.prompt summary::before { content: "▸ "; color: var(--violet); }
+    details.prompt[open] summary::before { content: "▾ "; }
+    details.prompt pre {
+        margin: 12px 0 0;
+        max-height: 260px;
+        overflow: auto;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: var(--ink-2);
+        white-space: pre-wrap;
+        background: var(--surface-2);
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    /* ── Ledger: real vs simulated ───────────────────────────────── */
+    .ledger {
+        margin-top: 46px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+    @media (max-width: 780px) { .ledger { grid-template-columns: 1fr; } }
+    .ledger ul {
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 9px;
+    }
+    .ledger li {
+        display: grid;
+        grid-template-columns: 15px 1fr;
+        gap: 10px;
+        font-size: 13.5px;
+        color: var(--ink-2);
+        line-height: 1.5;
+    }
+    .ledger li b { color: var(--ink); font-weight: 600; }
+    .ledger .k { color: var(--pass); font-weight: 700; }
+    .ledger .k.off { color: var(--ink-3); }
+
+    .deploy {
+        margin-top: 28px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 20px;
+    }
+    .deploy ol {
+        margin: 14px 0 0;
+        padding-left: 20px;
+        display: grid;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--ink-2);
+    }
+    .deploy code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12.5px;
+        background: var(--surface-2);
+        border-radius: 6px;
+        padding: 1px 6px;
+        color: var(--ink);
+    }
+
+    footer.foot {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+        font-size: 12.5px;
+        color: var(--ink-3);
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+</style>
+
+<div class="wrap">
+    <header class="masthead">
+        <div class="brand">
+            <span class="brand-mark">
+                <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <path d="M8 22.5c0-6 2.4-9.6 5-9.6 2 0 2.6 1.8 1.5 3.4-1 1.5-2.7 1-2.7-.8 0-2.6 3-5 5.6-5" stroke="#fff" stroke-width="2.1" stroke-linecap="round" opacity=".9"/>
+                    <circle cx="21.5" cy="13" r="3.6" fill="#fff"/>
+                    <rect x="17.6" y="17" width="7.8" height="6" rx="2.4" fill="#fff"/>
+                </svg>
+            </span>
+            ToyFoundry
+        </div>
+        <span class="chip"><span class="dot"></span> Print engine running in this page</span>
+    </header>
+
+    <section class="thesis">
+        <div>
+            <h1>Your kid drew it.<br>Here is the part that makes it printable.</h1>
+            <p>
+                A drawing becomes a toy in four moves: read it, draw it, sculpt it, check it can survive a printer.
+                The last two are running below — the same sculptor and the same printability checks that write the
+                STL a print shop receives. Change the character, change the size, watch the millimetres move.
+            </p>
+        </div>
+        <div class="aside">
+            <b>Nothing here is a mockup.</b> The mesh you turn around was welded, repaired, stood upright and
+            measured by the production code, compiled straight out of the repo.
+        </div>
+    </section>
+
+    <section class="bench">
+        <div class="stage">
+            <div class="flow">
+                <div class="flow-step">
+                    <span class="flow-thumb" id="thumb-drawing"></span>
+                    <span class="flow-label">Step 1<span>The drawing</span></span>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <span class="flow-thumb" id="thumb-design"></span>
+                    <span class="flow-label">Step 2<span>The design</span></span>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <span class="flow-thumb" id="thumb-toy"></span>
+                    <span class="flow-label">Step 3<span id="thumb-toy-label">The toy</span></span>
+                </div>
+            </div>
+            <div class="viewport">
+                <canvas id="view" aria-label="Rotating 3D preview of the printable toy"></canvas>
+                <div class="viewport-busy" id="busy">re-checking at the new size…</div>
+                <span class="viewport-note">Drag to turn it around</span>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="card">
+                <header>
+                    <h2 style="font-size:19px">The character</h2>
+                    <span class="eyebrow" id="dna-name">Bloopy</span>
+                </header>
+
+                <div class="field">
+                    <span class="eyebrow">Body plan</span>
+                    <div class="segmented" id="ctl-body">
+                        <button type="button" data-v="biped" aria-pressed="true">Biped</button>
+                        <button type="button" data-v="quadruped" aria-pressed="false">Four legs</button>
+                        <button type="button" data-v="blob" aria-pressed="false">Blob</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="eyebrow">Eyes</span>
+                    <div class="segmented" id="ctl-eyes">
+                        <button type="button" data-v="1" aria-pressed="false">One</button>
+                        <button type="button" data-v="2" aria-pressed="false">Two</button>
+                        <button type="button" data-v="3" aria-pressed="true">Three</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="eyebrow">What else did they draw</span>
+                    <div class="segmented" id="ctl-extras">
+                        <button type="button" data-v="horns" aria-pressed="true">Horns</button>
+                        <button type="button" data-v="wings" aria-pressed="true">Wings</button>
+                        <button type="button" data-v="tail" aria-pressed="false">Tail</button>
+                        <button type="button" data-v="ears" aria-pressed="false">Ears</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="eyebrow">Colour</span>
+                    <div class="swatches" id="ctl-palette"></div>
+                </div>
+
+            </div>
+
+            <div class="card" id="ai-card">
+                <header>
+                    <h2 style="font-size:19px">From a real drawing</h2>
+                    <span class="eyebrow" id="ai-state">checking…</span>
+                </header>
+
+                <label class="filebtn">
+                    <input type="file" id="drawing-input" accept="image/*">
+                    Choose a drawing
+                </label>
+
+                <div id="ai-actions" hidden style="margin-top:12px">
+                    <button type="button" class="filebtn" id="ai-read" style="border-style:solid;border-color:transparent;background:var(--grad);color:#fff">
+                        Read it with Claude
+                    </button>
+                    <p id="ai-hint" style="font-size:12px;color:var(--ink-3);margin-top:8px">
+                        Sends the picture to Claude on your own account, with the same instructions the server sends.
+                    </p>
+                </div>
+
+                <div id="ai-result" hidden style="margin-top:12px">
+                    <h3 id="ai-name" style="font-size:16px">—</h3>
+                    <p id="ai-summary" style="font-size:13.5px;color:var(--ink-2);margin-top:4px"></p>
+                    <div id="ai-features" class="swatches" style="margin-top:10px;gap:6px"></div>
+                    <p id="ai-confidence" style="font-size:12px;color:var(--ink-3);margin-top:9px"></p>
+                </div>
+
+                <div id="ai-error" hidden class="check fail" style="margin-top:12px">
+                    <span class="glyph">×</span><span id="ai-error-text"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <header>
+                    <h2 style="font-size:19px">Print check</h2>
+                    <span class="verdict ok" id="verdict">Ready to print</span>
+                </header>
+
+                <div class="field">
+                    <span class="eyebrow">Ordered size — the checks re-run at the height you pick</span>
+                    <div class="segmented" id="ctl-size"></div>
+                </div>
+
+                <div class="checks" id="checks"></div>
+
+                <div class="specs">
+                    <div class="spec"><span class="eyebrow">Size</span><b id="spec-size">—</b></div>
+                    <div class="spec"><span class="eyebrow">Material</span><b id="spec-mat">—</b></div>
+                    <div class="spec"><span class="eyebrow">Triangles</span><b id="spec-tris">—</b></div>
+                </div>
+
+                <div class="specs" style="grid-template-columns:1fr">
+                    <div class="price-row">
+                        <span id="price-label">10 cm toy, printed and posted</span>
+                        <b id="price">—</b>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="orders-card" hidden>
+                <header>
+                    <h2 style="font-size:19px">Orders</h2>
+                    <span class="eyebrow">kept with this page</span>
+                </header>
+                <div class="field">
+                    <span class="eyebrow">Name this one</span>
+                    <input id="order-label" maxlength="40" placeholder="Bloopy, for Noa"
+                        style="width:100%;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px">
+                </div>
+                <button type="button" class="filebtn" id="place-order"
+                    style="border-style:solid;border-color:transparent;background:var(--grad);color:#fff">
+                    Place a demo order
+                </button>
+                <p style="font-size:12px;color:var(--ink-3);margin-top:8px">
+                    No payment, no address — just the character, the size and the price, so the status flow has
+                    something real to move. Visible to anyone who can open this page.
+                </p>
+                <div id="orders-list" style="margin-top:14px;display:grid;gap:10px"></div>
+            </div>
+
+            <details class="prompt">
+                <summary>The prompt the image model is given</summary>
+                <pre id="prompt-text"></pre>
+            </details>
+        </div>
+    </section>
+
+    <section class="ledger">
+        <div>
+            <h2>What is real on this page</h2>
+            <ul>
+                <li><span class="k">✓</span><span><b>The sculptor.</b> Body plan, eye count, horns and wings become geometry — <code style="font-family:'IBM Plex Mono',monospace;font-size:12px">buildStandInToy</code>, unchanged.</span></li>
+                <li><span class="k">✓</span><span><b>The repair pass.</b> Weld, drop degenerate triangles, delete floating fragments, orient every shell outward, scale, stand it on the plate.</span></li>
+                <li><span class="k">✓</span><span><b>The print checks.</b> Watertightness, one-part, sampled wall thickness, balance over the footprint, overhang share — all measured, in millimetres.</span></li>
+                <li><span class="k">✓</span><span><b>The STL.</b> Written in memory as you watch; the byte count under "Triangles" is the real file size.</span></li>
+                <li><span class="k">✓</span><span><b>The prices and the prompt.</b> Same tables, same prompt builder as the live app.</span></li>
+                <li><span class="k">✓</span><span><b>Reading the drawing</b>, where your Claude account allows it: the same system prompt and the same normaliser the API route runs, answered by Claude vision on this page.</span></li>
+                <li><span class="k">✓</span><span><b>The order flow.</b> Placing one writes a stored record; the status buttons run the real forward-only state machine.</span></li>
+            </ul>
+        </div>
+        <div>
+            <h2>What needs a server</h2>
+            <ul>
+                <li><span class="k off">—</span><span><b>Drawing the toy.</b> The image model renders the collectible-toy version the parent approves.</span></li>
+                <li><span class="k off">—</span><span><b>The sculpt.</b> In production the mesh comes from image-to-3D; this procedural one is the fallback that keeps a paid order alive when that service fails.</span></li>
+                <li><span class="k off">—</span><span><b>Taking money.</b> Stripe Checkout, and the email that carries the only link back to an order.</span></li>
+                <li><span class="k off">—</span><span><b>Production.</b> Handing the STL to a print shop, and the queue a human works it from.</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="deploy">
+        <h2>What this is</h2>
+        <p style="margin-top:10px;color:var(--ink-2);font-size:14px">
+            ToyFoundry turns a child's drawing into a 3D printed collectible toy: read the drawing, design it,
+            approve it, sculpt it, check it can actually survive a printer, print it, post it. This page is the
+            middle of that pipeline, compiled out of the product's own source and running in your browser — so the
+            toy above was welded, repaired, stood upright and measured by the code an order really goes through.
+        </p>
+        <p style="margin-top:12px;color:var(--ink-2);font-size:14px">
+            The two steps this page cannot do on its own are the ones that need a server: Claude reading the drawing
+            into a character record, and the image model rendering the toy. Run the full app and both come alive.
+        </p>
+        <a class="chip" style="margin-top:16px;text-decoration:none"
+           href="https://github.com/BarBenHaim/Toy-Foundry">The source →</a>
+    </section>
+
+    <footer class="foot">
+        <span>ToyFoundry — one drawing, one toy, no inventory.</span>
+        <span id="engine-note">engine compiled from the repo</span>
+    </footer>
+</div>
+
+<script>window.process = window.process || { env: {} };
+"use strict";var TF=(()=>{var X=Object.defineProperty;var Ve=Object.getOwnPropertyDescriptor;var Ye=Object.getOwnPropertyNames;var Xe=Object.prototype.hasOwnProperty;var Ke=(e,n)=>{for(var t in n)X(e,t,{get:n[t],enumerable:!0})},We=(e,n,t,r)=>{if(n&&typeof n=="object"||typeof n=="function")for(let i of Ye(n))!Xe.call(e,i)&&i!==t&&X(e,i,{get:()=>n[i],enumerable:!(r=Ve(n,i))||r.enumerable});return e};var Ze=e=>We(X({},"__esModule",{value:!0}),e);var Et={};Ke(Et,{CONFIDENCE_FLOOR:()=>ce,DESIGN_FOR_PRINT_RULES:()=>j,DNA_SYSTEM_PROMPT:()=>Pe,HEIGHT_RANGE_MM:()=>ne,MATERIAL:()=>D,MAX_REVISIONS:()=>Ce,MIN_WALL_MM:()=>F,SHIPPING_MINOR:()=>Le,SIZES:()=>ze,STATUS_FLOW:()=>Y,applyTransition:()=>qe,boundsOf:()=>S,buildStandInToy:()=>pe,buildToyPrompt:()=>Fe,canTransition:()=>re,currentStatus:()=>oe,describeRevision:()=>$e,estimateCost:()=>Ne,estimateFilamentGrams:()=>V,formatMinor:()=>Ue,identityAnchors:()=>$,isConfident:()=>le,newId:()=>He,normalizeDna:()=>ue,prepareForPrint:()=>Te,statusMeta:()=>Ge,triangleCount:()=>O,writeBinaryStl:()=>Oe});var Je=["biped","quadruped","blob","winged","other"],ce=.35;function ue(e){let n=e&&typeof e=="object"?e:{},t=Array.isArray(n.features)?n.features.map(Qe).filter(o=>o!==null).sort((o,s)=>s.importance-o.importance).slice(0,8):[],r=Array.isArray(n.palette)?n.palette.map(W).filter(o=>o!==null).slice(0,6):[],i=n.proportions&&typeof n.proportions=="object"?n.proportions:{};return{name:U(n.name,40)||"The creature",summary:U(n.summary,240)||"A character from a child\u2019s drawing.",bodyPlan:Je.includes(n.bodyPlan)?n.bodyPlan:"other",features:t,palette:r.length>0?r:["#F2B705","#3A86FF","#FF5D8F"],proportions:{headToBody:K(i.headToBody,.3,3,1),limbLength:ae(i.limbLength,["short","medium","long"],"medium"),stance:ae(i.stance,["wide","narrow"],"wide")},quirks:Array.isArray(n.quirks)?n.quirks.map(o=>U(o,120)).filter(Boolean).slice(0,5):[],confidence:K(n.confidence,0,1,.5)}}function Qe(e){if(!e||typeof e!="object")return null;let n=e,t=U(n.kind,32).toLowerCase(),r=U(n.description,160);return!t&&!r?null:{kind:t||"detail",description:r||t,importance:Math.round(K(n.importance,1,5,3)),...W(n.color)?{color:W(n.color)}:{}}}function $(e,n=4){return e.features.filter(t=>t.importance>=3).slice(0,n)}function le(e){return e.confidence>=.35&&e.features.length>0}function U(e,n){return typeof e!="string"?"":e.replace(/\s+/g," ").trim().slice(0,n)}function K(e,n,t,r){let i=typeof e=="number"?e:Number(e);return isFinite(i)?Math.min(t,Math.max(n,i)):r}function ae(e,n,t){return n.includes(e)?e:t}function W(e){if(typeof e!="string")return null;let n=e.trim().replace(/^#/,"");return/^[0-9a-fA-F]{6}$/.test(n)?`#${n.toLowerCase()}`:/^[0-9a-fA-F]{3}$/.test(n)?`#${n.toLowerCase().split("").map(t=>t+t).join("")}`:null}function _(e,n=16,t=12){let r=[0,0,e],i=[];for(let a=1;a<t;a++){let c=Math.PI*a/t,u=Math.cos(c)*e,l=Math.sin(c)*e;for(let p=0;p<n;p++){let d=2*Math.PI*p/n;r.push(Math.cos(d)*l,Math.sin(d)*l,u)}}let o=r.length/3;r.push(0,0,-e);let s=a=>1+(a-1)*n;for(let a=0;a<n;a++)i.push(0,s(1)+a,s(1)+(a+1)%n);for(let a=1;a<t-1;a++)for(let c=0;c<n;c++){let u=s(a)+c,l=s(a)+(c+1)%n,p=s(a+1)+c,d=s(a+1)+(c+1)%n;i.push(u,p,d,u,d,l)}for(let a=0;a<n;a++)i.push(o,s(t-1)+(a+1)%n,s(t-1)+a);return{positions:Float64Array.from(r),indices:Uint32Array.from(i)}}function I(e,n,t,r=16){let i=[],o=[],s=n<=1e-6;for(let l=0;l<r;l++){let p=2*Math.PI*l/r;i.push(Math.cos(p)*e,Math.sin(p)*e,0)}if(!s)for(let l=0;l<r;l++){let p=2*Math.PI*l/r;i.push(Math.cos(p)*n,Math.sin(p)*n,t)}let a=i.length/3;s&&i.push(0,0,t);let c=i.length/3;i.push(0,0,0);let u=s?-1:i.length/3;s||i.push(0,0,t);for(let l=0;l<r;l++){let p=(l+1)%r;if(s)o.push(l,p,a);else{let d=l,f=p,h=r+l,m=r+p;o.push(d,f,m,d,m,h)}o.push(c,p,l),s||o.push(u,r+l,r+p)}return{positions:Float64Array.from(i),indices:Uint32Array.from(o)}}function A(e,[n,t,r]){let i=new Float64Array(e.positions.length);for(let o=0;o<e.positions.length;o+=3)i[o]=e.positions[o]+n,i[o+1]=e.positions[o+1]+t,i[o+2]=e.positions[o+2]+r;return{positions:i,indices:Uint32Array.from(e.indices)}}function E(e,[n,t,r]){let i=new Float64Array(e.positions.length);for(let a=0;a<e.positions.length;a+=3)i[a]=e.positions[a]*n,i[a+1]=e.positions[a+1]*t,i[a+2]=e.positions[a+2]*r;let o=[n,t,r].filter(a=>a<0).length,s=Uint32Array.from(e.indices);if(o%2===1)for(let a=0;a<s.length;a+=3){let c=s[a+1];s[a+1]=s[a+2],s[a+2]=c}return{positions:i,indices:s}}function N(e,n,t){let r=Math.cos(t),i=Math.sin(t),o=new Float64Array(e.positions.length);for(let s=0;s<e.positions.length;s+=3){let a=e.positions[s],c=e.positions[s+1],u=e.positions[s+2];n==="x"?(o[s]=a,o[s+1]=c*r-u*i,o[s+2]=c*i+u*r):n==="y"?(o[s]=a*r+u*i,o[s+1]=c,o[s+2]=-a*i+u*r):(o[s]=a*r-c*i,o[s+1]=a*i+c*r,o[s+2]=u)}return{positions:o,indices:Uint32Array.from(e.indices)}}var T=100;function pe(e){let n=nt(e.name+e.summary),t=[],r=Z(e.proportions.headToBody,.6,2.2),i=T*.19*r/1.2,o=T*.2,s=e.proportions.limbLength==="long"?T*.2:e.proportions.limbLength==="short"?T*.1:T*.15,a=e.proportions.stance==="wide"?1.25:.9,c=s,u=c+o*.85,l=u+o*.75+i*.75,p=e.bodyPlan==="quadruped",d=e.bodyPlan==="blob",f=Math.max(T*.075,4),h=p?[[-o*.75,-o*.5*a],[-o*.75,o*.5*a],[o*.75,-o*.5*a],[o*.75,o*.5*a]]:[[0,-o*.45*a],[0,o*.45*a]];for(let[g,y]of h)t.push({mesh:A(I(f,f*.95,c+o*.3,20),[g,y,0])}),t.push({mesh:A(E(_(f,16,10),[1,1,.6]),[g,y,f*.6])});let m=d?[1.25,1.15,1.05]:p?[1.5,.95,.9]:[1,.9,1.15];t.push({mesh:A(E(_(o,22,16),m),[0,0,u])});let x=p?o*1.1:0,M=[x,0,p?u+i*.5:l];if(t.push({mesh:A(E(_(i,22,16),[1,.95,1]),M)}),t.push({mesh:A(I(i*.55,i*.55,Math.max(M[2]-u,1),16),[x*.5,0,u])}),!p&&!d)for(let g of[-1,1]){let y=N(I(T*.045,T*.04,o*1.1,14),"x",g*.55);t.push({mesh:A(y,[0,g*o*.75,u+o*.1])})}for(let g of $(e,6)){let y=g.kind.toLowerCase(),P=tt(g.description);if(/horn|antler|spike/.test(y)){let b=Z(P||2,1,4);for(let k=0;k<b;k++){let R=b===1?0:(k/(b-1)-.5)*2,G=N(I(i*.3,i*.1,i*.9,12),"y",R*.35);t.push({mesh:A(G,[M[0]+R*i*.15,R*i*.5,M[2]+i*.55])})}}else if(/wing/.test(y))for(let b of[-1,1]){let k=N(E(_(o*.75,14,10),[.9,.25,1.1]),"x",b*.25);t.push({mesh:A(k,[-o*.35,b*o*.85,u+o*.35])})}else if(/tail/.test(y)){let b=N(I(o*.28,o*.12,o*1.1,12),"y",-1.9);t.push({mesh:A(b,[-o*.9,0,u+o*.1])})}else if(/ear/.test(y))for(let b of[-1,1])t.push({mesh:A(E(_(i*.38,14,10),[.6,.9,1.1]),[M[0],b*i*.8,M[2]+i*.5])});else if(/eye/.test(y)){let b=Z(P||2,1,3);for(let k=0;k<b;k++){let R=b===1?0:(k/(b-1)-.5)*1.4;t.push({mesh:A(_(i*(b>2?.24:.3),14,10),[M[0]+i*.72,R*i*.55,M[2]+i*.15])})}}else if(/nose|snout|beak/.test(y))t.push({mesh:A(E(_(i*.33,14,10),[1.1,.8,.8]),[M[0]+i*.8,0,M[2]-i*.1])});else if(/fin|shell|hump|backpack/.test(y))t.push({mesh:A(E(_(o*.6,14,10),[.7,1,.8]),[-o*.6,0,u+o*.4])});else{let b=n()*Math.PI*2;t.push({mesh:A(_(o*.28,12,8),[Math.cos(b)*o*.8,Math.sin(b)*o*.7,u+o*(n()-.2)])})}}let w=Math.max(...h.map(([g,y])=>Math.hypot(g,y)))+f*1.35;return t.push({mesh:A(I(w,w*.97,T*.03,28),[0,0,0])}),et(t.map(g=>g.mesh))}function et(e){let n=e.reduce((a,c)=>a+c.positions.length,0),t=e.reduce((a,c)=>a+c.indices.length,0),r=new Float64Array(n),i=new Uint32Array(t),o=0,s=0;for(let a of e){let c=o/3;r.set(a.positions,o);for(let u=0;u<a.indices.length;u++)i[s+u]=a.indices[u]+c;o+=a.positions.length,s+=a.indices.length}return{positions:r,indices:i}}function tt(e){let n={one:1,two:2,three:3,four:4,five:5,six:6},t=e.match(/\b(\d{1,2})\b/);if(t)return Number(t[1]);for(let[r,i]of Object.entries(n))if(new RegExp(`\\b${r}\\b`,"i").test(e))return i;return 0}function Z(e,n,t){return Math.min(t,Math.max(n,e))}function nt(e){let n=2166136261;for(let t=0;t<e.length;t++)n^=e.charCodeAt(t),n=Math.imul(n,16777619);return()=>{n+=1831565813;let t=n;return t=Math.imul(t^t>>>15,t|1),t^=t+Math.imul(t^t>>>7,t|61),((t^t>>>14)>>>0)/4294967296}}function O(e){return Math.floor(e.indices.length/3)}function de(e){return Math.floor(e.positions.length/3)}function rt(){return{positions:new Float64Array(0),indices:new Uint32Array(0)}}function S(e){if(e.positions.length===0)return{min:[0,0,0],max:[0,0,0],size:[0,0,0],center:[0,0,0]};let n=[1/0,1/0,1/0],t=[-1/0,-1/0,-1/0];for(let o=0;o<e.positions.length;o+=3)for(let s=0;s<3;s++){let a=e.positions[o+s];a<n[s]&&(n[s]=a),a>t[s]&&(t[s]=a)}let r=[t[0]-n[0],t[1]-n[1],t[2]-n[2]],i=[(t[0]+n[0])/2,(t[1]+n[1])/2,(t[2]+n[2])/2];return{min:n,max:t,size:r,center:i}}function z(e){let n=0,t=e.positions;for(let r=0;r<e.indices.length;r+=3){let i=e.indices[r]*3,o=e.indices[r+1]*3,s=e.indices[r+2]*3;n+=(t[i]*(t[o+1]*t[s+2]-t[o+2]*t[s+1])-t[i+1]*(t[o]*t[s+2]-t[o+2]*t[s])+t[i+2]*(t[o]*t[s+1]-t[o+1]*t[s]))/6}return n}function fe(e){let n=0;for(let t=0;t<e.indices.length;t+=3)n+=q(e,t);return n}function q(e,n){let t=e.positions,r=e.indices[n]*3,i=e.indices[n+1]*3,o=e.indices[n+2]*3,s=t[i]-t[r],a=t[i+1]-t[r+1],c=t[i+2]-t[r+2],u=t[o]-t[r],l=t[o+1]-t[r+1],p=t[o+2]-t[r+2],d=a*p-c*l,f=c*u-s*p,h=s*l-a*u;return Math.sqrt(d*d+f*f+h*h)/2}function C(e,n){let t=e.positions,r=e.indices[n]*3,i=e.indices[n+1]*3,o=e.indices[n+2]*3,s=t[i]-t[r],a=t[i+1]-t[r+1],c=t[i+2]-t[r+2],u=t[o]-t[r],l=t[o+1]-t[r+1],p=t[o+2]-t[r+2],d=a*p-c*l,f=c*u-s*p,h=s*l-a*u,m=Math.sqrt(d*d+f*f+h*h);return m>1e-12?(d/=m,f/=m,h/=m,[d,f,h]):null}function J(e,n){let t=e.positions,r=e.indices[n]*3,i=e.indices[n+1]*3,o=e.indices[n+2]*3;return[(t[r]+t[i]+t[o])/3,(t[r+1]+t[i+1]+t[o+1])/3,(t[r+2]+t[i+2]+t[o+2])/3]}function he(e,n=1e-4){let t=de(e);if(t===0)return rt();let r=1/Math.max(n,1e-9),i=new Map,o=new Uint32Array(t),s=[];for(let c=0;c<t;c++){let u=e.positions[c*3],l=e.positions[c*3+1],p=e.positions[c*3+2],d=`${Math.round(u*r)},${Math.round(l*r)},${Math.round(p*r)}`,f=i.get(d);if(f===void 0){let h=s.length/3;i.set(d,h),s.push(u,l,p),o[c]=h}else o[c]=f}let a=new Uint32Array(e.indices.length);for(let c=0;c<e.indices.length;c++)a[c]=o[e.indices[c]];return{positions:Float64Array.from(s),indices:a}}function me(e,n=1e-10){let t=[],r=0;for(let i=0;i<e.indices.length;i+=3){let o=e.indices[i],s=e.indices[i+1],a=e.indices[i+2];if(o===s||s===a||o===a||q(e,i)<=n){r++;continue}t.push(o,s,a)}return{mesh:{positions:e.positions,indices:Uint32Array.from(t)},removed:r}}function Q(e){let n=new Map,t=[],r=new Uint32Array(e.indices.length);for(let i=0;i<e.indices.length;i++){let o=e.indices[i],s=n.get(o);s===void 0&&(s=t.length/3,n.set(o,s),t.push(e.positions[o*3],e.positions[o*3+1],e.positions[o*3+2])),r[i]=s}return{positions:Float64Array.from(t),indices:r}}function be(e,n,t){let r=new Float64Array(e.positions.length);for(let s=0;s<e.positions.length;s+=3)r[s]=e.positions[s]*n[0]+t[0],r[s+1]=e.positions[s+1]*n[1]+t[1],r[s+2]=e.positions[s+2]*n[2]+t[2];let o=[n[0],n[1],n[2]].filter(s=>s<0).length%2===1?ot(e.indices):Uint32Array.from(e.indices);return{positions:r,indices:o}}function ot(e){let n=new Uint32Array(e.length);for(let t=0;t<e.length;t+=3)n[t]=e[t],n[t+1]=e[t+2],n[t+2]=e[t+1];return n}function ge(e,n){let t=new Float64Array(e.positions.length);for(let i=0;i<e.positions.length;i+=3)t[i]=e.positions[i],t[i+1]=-e.positions[i+2],t[i+2]=e.positions[i+1];let r={positions:t,indices:Uint32Array.from(e.indices)};return it(r,n)}function it(e,n){let t=S(e),r=t.size[2],i=r>1e-9?n/r:1;return be(e,[i,i,i],[-t.center[0]*i,-t.center[1]*i,-t.min[2]*i])}function ye(e){let n=S(e);return Math.abs(n.min[2])<1e-9?e:be(e,[1,1,1],[0,0,-n.min[2]])}function Me(e){let n=new Map;for(let o=0;o<e.indices.length;o+=3){let s=[e.indices[o],e.indices[o+1],e.indices[o+2]];for(let a=0;a<3;a++){let c=s[a],u=s[(a+1)%3],l=c<u?`${c}_${u}`:`${u}_${c}`,p=c<u?1:-1,d=n.get(l);d?d.push(p):n.set(l,[p])}}let t=0,r=0,i=0;for(let o of n.values())o.length===1?t++:o.length>2?r++:o[0]===o[1]&&i++;return{boundaryEdges:t,nonManifoldEdges:r,inconsistentEdges:i,watertight:t===0&&r===0}}function ee(e){let n=de(e);if(n===0)return[];let t=new Uint32Array(n);for(let s=0;s<n;s++)t[s]=s;let r=s=>{let a=s;for(;t[a]!==a;)a=t[a];for(;t[s]!==a;){let c=t[s];t[s]=a,s=c}return a},i=(s,a)=>{let c=r(s),u=r(a);c!==u&&(t[c]=u)};for(let s=0;s<e.indices.length;s+=3)i(e.indices[s],e.indices[s+1]),i(e.indices[s+1],e.indices[s+2]);let o=new Map;for(let s=0;s<e.indices.length;s+=3){let a=r(e.indices[s]),c=o.get(a);c?c.push(s/3):o.set(a,[s/3])}return Array.from(o.values())}function te(e){return ee(e).map(n=>{let t=new Uint32Array(n.length*3);for(let r=0;r<n.length;r++)t[r*3]=e.indices[n[r]*3],t[r*3+1]=e.indices[n[r]*3+1],t[r*3+2]=e.indices[n[r]*3+2];return Q({positions:e.positions,indices:t})}).sort((n,t)=>Math.abs(z(t))-Math.abs(z(n)))}function xe(e,n){let t=[1/0,1/0,1/0],r=[-1/0,-1/0,-1/0];for(let i of n)for(let o=0;o<3;o++){let s=e.indices[i*3+o]*3;for(let a=0;a<3;a++){let c=e.positions[s+a];c<t[a]&&(t[a]=c),c>r[a]&&(r[a]=c)}}return isFinite(t[0])?{min:t,max:r,size:[r[0]-t[0],r[1]-t[1],r[2]-t[2]],center:[(t[0]+r[0])/2,(t[1]+r[1])/2,(t[2]+r[2])/2]}:{min:[0,0,0],max:[0,0,0],size:[0,0,0],center:[0,0,0]}}function we(e){let n=O(e);if(n===0)return{mesh:e,flipped:0};let t=new Map;for(let c=0;c<n;c++)for(let u=0;u<3;u++){let l=e.indices[c*3+u],p=e.indices[c*3+(u+1)%3],d=l<p?`${l}_${p}`:`${p}_${l}`,f=t.get(d);f?f.push(c):t.set(d,[c])}let r=Uint32Array.from(e.indices),i=new Uint8Array(n),o=0,s=c=>{let u=r[c*3+1];r[c*3+1]=r[c*3+2],r[c*3+2]=u,o++},a=(c,u,l)=>{for(let p=0;p<3;p++)if(r[c*3+p]===u&&r[c*3+(p+1)%3]===l)return!0;return!1};for(let c=0;c<n;c++){if(i[c])continue;i[c]=1;let u=[c],l=[c];for(;l.length;){let d=l.pop();for(let f=0;f<3;f++){let h=r[d*3+f],m=r[d*3+(f+1)%3],x=h<m?`${h}_${m}`:`${m}_${h}`,M=t.get(x)||[];for(let w of M)w===d||i[w]||(a(w,h,m)&&s(w),i[w]=1,u.push(w),l.push(w))}}let p={positions:e.positions,indices:Uint32Array.from(u.flatMap(d=>[r[d*3],r[d*3+1],r[d*3+2]]))};if(z(p)<0)for(let d of u)s(d)}return{mesh:{positions:e.positions,indices:r},flipped:o}}var ne={min:80,max:120},F=2,Ae=.2,ve=.25,ke=45,Se=.02,D={name:"PLA",densityGramsPerCm3:1.24,infillFactor:.35},j=["chunky, solid, stylised proportions \u2014 thick limbs, thick neck, no wire-thin parts","the character stands upright on its own two feet (or on a small integrated base) with a wide, planted stance","one single connected object: no floating pieces, no separately hanging accessories","ears, horns, wings, tails and spikes are thick, short and tucked toward the body rather than long and spindly","no thin gaps between the arms and the body, and no deep undercuts under the chin or the belly","a flat, stable underside where the feet or the base meet the ground","details are bold and carved rather than fine and engraved, readable at 10 centimetres tall"];function Te(e,n,t={}){let r=[],i=he(e,1e-4);if(i.positions.length<e.positions.length){let h=(e.positions.length-i.positions.length)/3;r.push(`welded ${h.toLocaleString("en-US")} duplicate vertices`)}let{mesh:o,removed:s}=me(i);s>0&&r.push(`removed ${s} degenerate triangle${s===1?"":"s"}`);let{mesh:a,shellCount:c,dropped:u}=at(o);u>0&&r.push(`deleted ${u} floating fragment${u===1?"":"s"}`);let{mesh:l,flipped:p}=we(a);p>0&&r.push(`re-oriented ${p} inside-out triangle${p===1?"":"s"}`);let d=t.sourceUp==="z"?ye(st(l,n)):ge(l,n);r.push(`scaled to ${n}mm tall and seated on the build plate`);let f=Q(d);return{mesh:f,report:lt(f,n,c,r)}}function st(e,n){let t=S(e),r=t.size[2]>1e-9?n/t.size[2]:1,i=new Float64Array(e.positions.length);for(let o=0;o<e.positions.length;o+=3)i[o]=(e.positions[o]-t.center[0])*r,i[o+1]=(e.positions[o+1]-t.center[1])*r,i[o+2]=(e.positions[o+2]-t.min[2])*r;return{positions:i,indices:Uint32Array.from(e.indices)}}function at(e){let n=te(e);if(n.length<=1)return{mesh:e,shellCount:n.length,dropped:0};let t=Re(n),r=t.map(c=>c.reduce((u,l)=>u+Math.abs(z(n[l])),0)),i=Math.max(...r),o=t.filter((c,u)=>r[u]>=i*Se),s=o.flat().map(c=>n[c]),a=n.length-s.length;return{mesh:a>0?ut(s):e,shellCount:o.length,dropped:a}}function Re(e,n=.01){let t=e.map(S),r=e.map((s,a)=>a),i=s=>{for(;r[s]!==s;)r[s]=r[r[s]],s=r[s];return s};for(let s=0;s<e.length;s++)for(let a=s+1;a<e.length;a++){if(!ct(t[s],t[a],n))continue;let c=i(s),u=i(a);c!==u&&(r[c]=u)}let o=new Map;for(let s=0;s<e.length;s++){let a=i(s),c=o.get(a);c?c.push(s):o.set(a,[s])}return Array.from(o.values())}function ct(e,n,t){for(let r=0;r<3;r++)if(e.min[r]>n.max[r]+t||n.min[r]>e.max[r]+t)return!1;return!0}function ut(e){let n=e.reduce((a,c)=>a+c.positions.length,0),t=e.reduce((a,c)=>a+c.indices.length,0),r=new Float64Array(n),i=new Uint32Array(t),o=0,s=0;for(let a of e){let c=o/3;r.set(a.positions,o);for(let u=0;u<a.indices.length;u++)i[s+u]=a.indices[u]+c;o+=a.positions.length,s+=a.indices.length}return{positions:r,indices:i}}function lt(e,n,t,r=[]){let i=S(e),o=Math.abs(z(e)),s=O(e),a=[];if(s===0)return{ok:!1,widthMm:0,depthMm:0,heightMm:0,volumeCm3:0,triangleCount:0,shellCount:0,checks:[{id:"empty",level:"fail",message:"The 3D model came back empty."}],repairs:r};let c=i.size[2];a.push(Math.abs(c-n)<=.5?_e("pass",`Stands ${c.toFixed(1)}mm tall, exactly the size ordered.`,c):_e("fail",`Height came out ${c.toFixed(1)}mm instead of ${n}mm.`,c));let u=Me(e);u.watertight?a.push({id:"watertight",level:"pass",message:"The surface is closed \u2014 no holes to fill."}):u.boundaryEdges>0&&u.boundaryEdges<=s*.02?a.push({id:"watertight",level:"warn",message:`${u.boundaryEdges} small holes in the surface. Slicers close gaps this size on their own.`,value:u.boundaryEdges}):a.push({id:"watertight",level:"fail",message:`The surface is open in ${u.boundaryEdges} places \u2014 a printer cannot tell inside from outside.`,value:u.boundaryEdges});let l=Re(te(e)).length;a.push(l<=1?{id:"single_part",level:"pass",message:"One connected piece \u2014 it prints as a single toy."}:{id:"single_part",level:"fail",message:`The model is ${l} separate pieces. A toy has to print as one.`,value:l});let p=pt(e);p.samples===0?a.push({id:"wall_thickness",level:"warn",message:"Could not measure wall thickness on this model."}):p.minMm>=F?a.push({id:"wall_thickness",level:"pass",message:`No part thinner than about ${p.minMm.toFixed(1)}mm \u2014 thick enough to survive a child.`,value:v(p.minMm,2),unit:"mm"}):p.thinShare<=.02?a.push({id:"wall_thickness",level:"warn",message:`A small area measures about ${p.minMm.toFixed(1)}mm, under our ${F}mm rule. It will print, but treat that spot gently.`,value:v(p.minMm,2),unit:"mm"}):a.push({id:"wall_thickness",level:"fail",message:`Parts of the toy are only about ${p.minMm.toFixed(1)}mm thick. Anything under ${F}mm snaps.`,value:v(p.minMm,2),unit:"mm"});let d=bt(e),f=c>0?d.baseMinSideMm/c:0;d.centerOverBase?f>=Ae?a.push({id:"stability",level:"pass",message:"Wide, planted stance \u2014 it stands on a shelf without help.",value:v(f,3)}):a.push({id:"stability",level:"warn",message:"Narrow footing. It stands, but it will not survive a knock to the table.",value:v(f,3)}):a.push({id:"stability",level:"fail",message:"The toy is off balance \u2014 its weight falls outside its feet and it tips over.",value:v(f,3)});let h=yt(e);return a.push(h<=ve?{id:"overhangs",level:"pass",message:"Little to no support material needed \u2014 the surface comes out clean.",value:v(h,3)}:{id:"overhangs",level:"warn",message:`${Math.round(h*100)}% of the surface overhangs steeply. It prints with supports, which leave faint marks underneath.`,value:v(h,3)}),{ok:!a.some(x=>x.level==="fail"),widthMm:v(i.size[0],2),depthMm:v(i.size[1],2),heightMm:v(c,2),volumeCm3:v(o/1e3,2),triangleCount:s,shellCount:Math.max(t,l),checks:a,repairs:r}}function _e(e,n,t){return{id:"size",level:e,message:n,value:v(t,2),unit:"mm"}}function V(e){return v(e*D.infillFactor*D.densityGramsPerCm3,1)}function pt(e,n=F){let t=O(e);if(t===0)return{minMm:0,thinShare:0,samples:0,thinnestAt:null};let r=n*3,i=ht(e,Math.max(r,1)),o=Mt(Math.round(4e5/Math.max(t,1))*20,60,600),s=Math.max(1,Math.floor(t/o)),a=ee(e),c=a.map(f=>xe(e,f)),u=1/0,l=0,p=0,d=null;for(let f=7%Math.max(t,1);f<t;f+=s){let h=C(e,f*3);if(!h)continue;let m=J(e,f*3),x=.01;if(a.length>1){let y=[m[0]+h[0]*x,m[1]+h[1]*x,m[2]+h[2]*x];if(dt(e,a,c,y))continue}let M=[m[0]-h[0]*x,m[1]-h[1]*x,m[2]-h[2]*x],w=[-h[0],-h[1],-h[2]],g=mt(e,i,M,w,r,f);p++,g!==null&&(g<u&&(u=g,d=[m[0],m[1],m[2]]),g<n&&l++)}return isFinite(u)?{minMm:u,thinShare:p>0?l/p:0,samples:p,thinnestAt:d}:{minMm:r,thinShare:0,samples:p,thinnestAt:null}}function dt(e,n,t,r){for(let i=0;i<n.length;i++){let o=t[i];if(!(r[0]<o.min[0]||r[0]>o.max[0]||r[1]<o.min[1]||r[1]>o.max[1]||r[2]<o.min[2]||r[2]>o.max[2])&&ft(e,n[i],r))return!0}return!1}var H=[.5773502691896258,.3313565,.7448192];function ft(e,n,t){let r=0;for(let i of n){let o=Ie(e,i,t,H);if(o===null||o<=1e-9)continue;let s=C(e,i*3);if(!s)continue;let a=H[0]*s[0]+H[1]*s[1]+H[2]*s[2];Math.abs(a)<1e-9||(r+=a>0?1:-1)}return r>0}function ht(e,n){let t=S(e),r=[Math.max(1,Math.ceil(t.size[0]/n)),Math.max(1,Math.ceil(t.size[1]/n)),Math.max(1,Math.ceil(t.size[2]/n))],i=new Map,o=O(e);for(let s=0;s<o;s++){let a=[1/0,1/0,1/0],c=[-1/0,-1/0,-1/0];for(let u=0;u<3;u++){let l=e.indices[s*3+u]*3;for(let p=0;p<3;p++){let d=e.positions[l+p];d<a[p]&&(a[p]=d),d>c[p]&&(c[p]=d)}}Ee(t.min,r,n,a,c,u=>{let l=i.get(u);l?l.push(s):i.set(u,[s])})}return{cell:n,min:t.min,dims:r,buckets:i}}function Ee(e,n,t,r,i,o){let s=L(Math.floor((r[0]-e[0])/t),0,n[0]-1),a=L(Math.floor((i[0]-e[0])/t),0,n[0]-1),c=L(Math.floor((r[1]-e[1])/t),0,n[1]-1),u=L(Math.floor((i[1]-e[1])/t),0,n[1]-1),l=L(Math.floor((r[2]-e[2])/t),0,n[2]-1),p=L(Math.floor((i[2]-e[2])/t),0,n[2]-1);for(let d=s;d<=a;d++)for(let f=c;f<=u;f++)for(let h=l;h<=p;h++)o((d*n[1]+f)*n[2]+h)}function mt(e,n,t,r,i,o){let s=[t[0]+r[0]*i,t[1]+r[1]*i,t[2]+r[2]*i],a=[Math.min(t[0],s[0]),Math.min(t[1],s[1]),Math.min(t[2],s[2])],c=[Math.max(t[0],s[0]),Math.max(t[1],s[1]),Math.max(t[2],s[2])],u=new Set;Ee(n.min,n.dims,n.cell,a,c,d=>{let f=n.buckets.get(d);if(f)for(let h of f)u.add(h)});let l=[];for(let d of u){if(d===o)continue;let f=Ie(e,d,t,r);if(f===null||f<=1e-4||f>i)continue;let h=C(e,d*3);if(!h)continue;let m=r[0]*h[0]+r[1]*h[1]+r[2]*h[2];Math.abs(m)<1e-9||l.push({distance:f,entering:m<0})}if(l.length===0)return null;l.sort((d,f)=>d.distance-f.distance);let p=1;for(let d of l)if(p+=d.entering?1:-1,p<=0)return d.distance;return null}function Ie(e,n,t,r){let i=e.positions,o=e.indices[n*3]*3,s=e.indices[n*3+1]*3,a=e.indices[n*3+2]*3,c=i[s]-i[o],u=i[s+1]-i[o+1],l=i[s+2]-i[o+2],p=i[a]-i[o],d=i[a+1]-i[o+1],f=i[a+2]-i[o+2],h=r[1]*f-r[2]*d,m=r[2]*p-r[0]*f,x=r[0]*d-r[1]*p,M=c*h+u*m+l*x;if(Math.abs(M)<1e-12)return null;let w=1/M,g=t[0]-i[o],y=t[1]-i[o+1],P=t[2]-i[o+2],b=(g*h+y*m+P*x)*w;if(b<-1e-9||b>1+1e-9)return null;let k=y*l-P*u,R=P*c-g*l,G=g*u-y*c,ie=(r[0]*k+r[1]*R+r[2]*G)*w;if(ie<-1e-9||b+ie>1+1e-9)return null;let se=(p*k+d*R+f*G)*w;return se>0?se:null}function bt(e){let n=S(e),t=n.min[2]+Math.max(2,n.size[2]*.02),r=1/0,i=-1/0,o=1/0,s=-1/0,a=!1;for(let d=0;d<e.positions.length;d+=3){if(e.positions[d+2]>t)continue;a=!0;let f=e.positions[d],h=e.positions[d+1];f<r&&(r=f),f>i&&(i=f),h<o&&(o=h),h>s&&(s=h)}if(!a)return{baseMinSideMm:0,centerOverBase:!1};let c=gt(e),u=(i-r)*.1,l=(s-o)*.1,p=c[0]>=r-u&&c[0]<=i+u&&c[1]>=o-l&&c[1]<=s+l;return{baseMinSideMm:Math.min(i-r,s-o),centerOverBase:p}}function gt(e){let n=0,t=0,r=0,i=0,o=e.positions;for(let s=0;s<e.indices.length;s+=3){let a=e.indices[s]*3,c=e.indices[s+1]*3,u=e.indices[s+2]*3,l=(o[a]*(o[c+1]*o[u+2]-o[c+2]*o[u+1])-o[a+1]*(o[c]*o[u+2]-o[c+2]*o[u])+o[a+2]*(o[c]*o[u+1]-o[c+1]*o[u]))/6;n+=l,t+=(o[a]+o[c]+o[u])/4*l,r+=(o[a+1]+o[c+1]+o[u+1])/4*l,i+=(o[a+2]+o[c+2]+o[u+2])/4*l}return Math.abs(n)<1e-12?S(e).center:[t/n,r/n,i/n]}function yt(e){let t=S(e).min[2]+.5,r=-Math.cos(ke*Math.PI/180),i=0,o=fe(e);if(o<=0)return 0;for(let s=0;s<e.indices.length;s+=3){let a=C(e,s);!a||a[2]>r||J(e,s)[2]<=t||(i+=q(e,s))}return i/o}function v(e,n){let t=Math.pow(10,n);return Math.round(e*t)/t}function Mt(e,n,t){return Math.min(t,Math.max(n,e))}function L(e,n,t){return Math.min(t,Math.max(n,Math.trunc(e)))}var B=80,xt=50;function Oe(e,n="ToyFoundry"){let t=Math.floor(e.indices.length/3),r=new Uint8Array(B+4+t*xt),i=new DataView(r.buffer),o=new TextEncoder().encode(n.slice(0,B));r.set(o.subarray(0,B),0),i.setUint32(B,t,!0);let s=B+4;for(let a=0;a<e.indices.length;a+=3){let c=C(e,a)||[0,0,0];i.setFloat32(s,c[0],!0),i.setFloat32(s+4,c[1],!0),i.setFloat32(s+8,c[2],!0),s+=12;for(let u=0;u<3;u++){let l=e.indices[a+u]*3;i.setFloat32(s,e.positions[l],!0),i.setFloat32(s+4,e.positions[l+1],!0),i.setFloat32(s+8,e.positions[l+2],!0),s+=12}i.setUint16(s,0,!0),s+=2}return r}var Ce=6,wt=120,At=["a designer vinyl collectible toy of this character","stylised 3D character sculpt, smooth matte vinyl surfaces, soft rounded forms","clean studio product photograph, soft even lighting, gentle contact shadow","plain light neutral background, no text, no logos, no packaging, no props","full body, standing, facing the camera, centred, whole toy visible with margin around it"].join("; ");function vt(e){let t=$(e,5).map(o=>`- ${o.kind}: ${o.description}${o.color?` (${o.color})`:""}`),r=e.palette.join(", "),i=e.proportions.headToBody>=1.2?"keep the oversized head \u2014 it is most of why the drawing looks like itself":"keep the head-to-body ratio of the drawing";return[`The character is ${e.name}: ${e.summary}`,"This is a real child\u2019s drawing. Sculpt THIS character \u2014 do not substitute a better-drawn or more conventional creature.",t.length>0?`Features that must all appear, in these counts and positions:
+${t.join(`
+`)}`:"",`Keep the drawing\u2019s colours: ${r}.`,`${i}. Body plan: ${e.bodyPlan}. Stance: ${e.proportions.stance}. Limbs: ${e.proportions.limbLength}.`,e.quirks.length>0?`Keep these oddities exactly as drawn: ${e.quirks.join("; ")}.`:"","The wonky, asymmetric, hand-drawn qualities are the point. Tidy the craft, never the character."].filter(Boolean).join(`
+`)}function kt(){return["Design it so it can be 3D printed as one solid object:",...j.map(e=>`- ${e}`)].join(`
+`)}function St(e,n){switch(e.kind){case"bigger_feature":return`Make the ${(e.detail||"").trim()||"the main feature"} noticeably bigger and bolder than in the previous version, while keeping everything else identical.`;case"change_color":{let t=(e.detail||"").trim(),r=n.palette.slice(0,2).join(" and ");return t?`Recolour the toy so its dominant colour is ${t}. Keep the character, the shapes and the markings unchanged; only the colour changes.`:`Shift the palette away from ${r} while keeping the character and shapes unchanged.`}case"cuter":return"Make it cuter: rounder body, bigger eyes, softer edges, friendlier expression. Keep every distinguishing feature \u2014 cuter, not different.";case"closer_to_drawing":return"Stay much closer to the original drawing. Match its exact proportions, its asymmetries and its colours even where they look naive. Prefer faithfulness over polish.";case"custom":return`The parent asked for this change, and only this change: "${_t(e.detail||"")}". Keep everything else identical.`;default:return""}}function Fe(e){let n=e.revisions.map(r=>St(r,e.dna)).filter(Boolean).map((r,i)=>`${i+1}. ${r}`),t=n.length>0?`Changes requested by the parent, applied in order on top of the character above:
+${n.join(`
+`)}`:"";return[At+".",vt(e.dna),kt(),t,"Output: one toy, one image, no variants side by side."].filter(Boolean).join(`
+
+`)}var Pe=`You are a toy designer looking at a child's drawing.
+
+Your job is to record what makes THIS character recognisable, so that a 3D toy of it can be sculpted later without losing its identity. Be literal. If the creature has three eyes of different sizes, that is the single most important thing about it.
+
+Reply with JSON only, no prose, in exactly this shape:
+{
+  "name": "short name for the creature, use the child's written name if one is visible",
+  "summary": "one sentence a parent would recognise",
+  "bodyPlan": "biped | quadruped | blob | winged | other",
+  "features": [
+    { "kind": "horns", "description": "two curved horns, the left one longer", "importance": 5, "color": "#8a5cff" }
+  ],
+  "palette": ["#hex", "#hex"],
+  "proportions": { "headToBody": 1.4, "limbLength": "short|medium|long", "stance": "wide|narrow" },
+  "quirks": ["one shoe is a different colour"],
+  "confidence": 0.0
+}
+
+Rules:
+- importance 5 = removing it would make the parent say "that isn't it". 1 = incidental.
+- Colours must be hex sampled from the drawing, not colour names.
+- confidence is how clearly you can read the drawing: a crisp marker drawing is 0.9, a faint pencil sketch photographed in poor light is 0.3, a photo with no drawing in it at all is 0.0.
+- List every limb, eye, horn, wing, spike, tail and accessory you can see, with counts.`;function _t(e){return e.replace(/[\r\n]+/g," ").replace(/\b(ignore|disregard|forget)\b[^.]*\b(instructions?|prompt|above|previous)\b/gi,"").replace(/\b(system|assistant|developer)\s*:/gi,"").replace(/["`]/g,"").replace(/\s+/g," ").trim().slice(0,wt)}function $e(e){switch(e.kind){case"bigger_feature":return`Bigger ${e.detail||"features"}`;case"change_color":return`Colour \u2192 ${e.detail}`;case"cuter":return"Cuter";case"closer_to_drawing":return"Closer to the drawing";case"custom":return e.detail||"Custom change";default:return"Change"}}var Tt=process.env.NEXT_PUBLIC_TOYFOUNDRY_CURRENCY||"USD",ze=[{id:"small",heightMm:80,label:"8 cm",blurb:"Pocket size. Goes to kindergarten.",priceMinor:6900},{id:"medium",heightMm:100,label:"10 cm",blurb:"The one most people pick. Shelf presence.",priceMinor:8900},{id:"large",heightMm:120,label:"12 cm",blurb:"A proper centrepiece. Every detail readable.",priceMinor:11900}],Le=990;function Ue(e,n=Tt,t="en-US"){return new Intl.NumberFormat(t,{style:"currency",currency:n,minimumFractionDigits:e%100===0?0:2}).format(e/100)}function Ne(e,n){let t=V(e),r=Math.round(450+t*6),i=1200,o=r+i,s=n.totalMinor-o;return{filamentGrams:t,printMinor:r,shippingMinor:i,totalMinor:o,marginMinor:s,marginShare:n.totalMinor>0?s/n.totalMinor:0}}var Y=[{id:"creating_design",label:"Creating design",detail:"Turning the drawing into a toy design.",eta:"about a minute"},{id:"creating_3d_model",label:"Creating 3D model",detail:"Sculpting the approved design into a printable 3D model.",eta:"a few minutes"},{id:"ready_for_production",label:"Ready for production",detail:"The model passed its print checks and is queued with the printer.",eta:"within a day"},{id:"printing",label:"Printing",detail:"Being printed, layer by layer.",eta:"usually 2\u20133 days"},{id:"shipped",label:"Shipped",detail:"On its way to you.",eta:"5\u201312 days"},{id:"delivered",label:"Delivered",detail:"It arrived. Go and see the face.",eta:"",terminal:!0}],De=[{id:"awaiting_payment",label:"Awaiting payment",detail:"The order is held until checkout completes.",eta:""},...Y,{id:"cancelled",label:"Cancelled",detail:"This order was cancelled.",eta:"",terminal:!0}];function Ge(e){return De.find(n=>n.id===e)||De[0]}function Be(e){return Y.findIndex(n=>n.id===e)}function re(e,n){if(e===n)return!1;if(n==="cancelled")return e!=="delivered";if(e==="cancelled"||e==="delivered"||n==="awaiting_payment")return!1;if(e==="awaiting_payment")return!0;let t=Be(e),r=Be(n);return t<0||r<0?!1:r>t}function qe(e,n,t,r,i=new Date){let o=oe(e);return re(o,n)?[...e,{status:n,at:i.toISOString(),by:t,...r?{note:r}:{}}]:null}function oe(e){return!e||e.length===0?"awaiting_payment":e[e.length-1].status}var je="abcdefghijklmnopqrstuvwxyz0123456789";function Rt(e){let n=new Uint8Array(e);return globalThis.crypto.getRandomValues(n),n}function He(e,n=10){let t=Rt(n),r="";for(let i=0;i<n;i++)r+=je[t[i]%je.length];return`${e}_${r}`}return Ze(Et);})();
+</script>
+<script>
+    (function () {
+        'use strict'
+        var E = window.TF
+
+        // ── State ────────────────────────────────────────────────
+        // The character record the vision pass would normally write.
+        // Here the visitor sets it by hand, which is the honest version
+        // of "the AI step is off" — and it doubles as a demonstration of
+        // exactly which parts of the record drive the geometry.
+        var state = {
+            bodyPlan: 'biped',
+            eyes: 3,
+            extras: { horns: true, wings: true, tail: false, ears: false },
+            palette: ['#6c4cf1', '#f5476b', '#ffb627', '#2ed9a5', '#2b7fd8'],
+            colorIndex: 0,
+            sizeId: 'medium',
+            drawing: null,
+            aiDna: null,
+        }
+
+        var built = null   // { mesh, report }
+        var stlBytes = 0
+
+        function dna() {
+            var kinds = { eyes: 1, horns: 1, wings: 1, tail: 1, ears: 1 }
+            var features = []
+            features.push({
+                kind: 'eyes',
+                description: (['one', 'two', 'three'][state.eyes - 1]) + ' eyes in a row',
+                importance: 5,
+            })
+            if (state.extras.horns) features.push({ kind: 'horns', description: 'two curved horns', importance: 5 })
+            if (state.extras.wings) features.push({ kind: 'wings', description: 'two small wings', importance: 4 })
+            if (state.extras.tail) features.push({ kind: 'tail', description: 'one stubby tail', importance: 4 })
+            if (state.extras.ears) features.push({ kind: 'ears', description: 'two rounded ears', importance: 4 })
+
+            var pal = state.palette.slice(state.colorIndex).concat(state.palette.slice(0, state.colorIndex))
+
+            if (state.aiDna) {
+                // A real reading of a real drawing. The toggles still
+                // apply — they are how you correct a misread — but
+                // everything Claude found that the toggles cannot
+                // express (a beak, a shell, a bent ear) is kept, which
+                // is the whole identity-preservation rule this product
+                // is built on.
+                var extra = state.aiDna.features.filter(function (f) { return !kinds[f.kind] })
+                return E.normalizeDna({
+                    name: state.aiDna.name,
+                    summary: state.aiDna.summary,
+                    bodyPlan: state.bodyPlan,
+                    features: features.concat(extra),
+                    palette: pal,
+                    proportions: state.aiDna.proportions,
+                    quirks: state.aiDna.quirks,
+                    confidence: state.aiDna.confidence,
+                })
+            }
+
+            return E.normalizeDna({
+                name: 'Bloopy',
+                summary: 'a ' + state.bodyPlan + ' creature with ' + features.length + ' features a child would notice',
+                bodyPlan: state.bodyPlan,
+                features: features,
+                palette: pal,
+                proportions: { headToBody: 1.4, limbLength: 'short', stance: 'wide' },
+                quirks: [],
+                confidence: 0.9,
+            })
+        }
+
+        function currentSize() {
+            for (var i = 0; i < E.SIZES.length; i++) if (E.SIZES[i].id === state.sizeId) return E.SIZES[i]
+            return E.SIZES[1]
+        }
+
+        // ── Build ────────────────────────────────────────────────
+        function rebuild() {
+            var d = dna()
+            var size = currentSize()
+            built = E.prepareForPrint(E.buildStandInToy(d), size.heightMm, { sourceUp: 'z' })
+            stlBytes = E.writeBinaryStl(built.mesh).byteLength
+            prepareRender(built.mesh)
+            paintReport(built.report, size)
+            document.getElementById('prompt-text').textContent = E.buildToyPrompt({ dna: d, revisions: [] })
+            document.getElementById('dna-name').textContent = d.features.length + ' features kept'
+            drawThumbs()
+        }
+
+        // ── Report ───────────────────────────────────────────────
+        var GLYPH = { pass: '✓', warn: '!', fail: '×' }
+        function paintReport(report, size) {
+            var v = document.getElementById('verdict')
+            v.textContent = report.ok ? 'Ready to print' : 'Needs a fix'
+            v.className = 'verdict ' + (report.ok ? 'ok' : 'no')
+
+            var order = { fail: 0, warn: 1, pass: 2 }
+            var checks = report.checks.slice().sort(function (a, b) { return order[a.level] - order[b.level] })
+            var html = ''
+            for (var i = 0; i < checks.length; i++) {
+                html += '<div class="check ' + checks[i].level + '"><span class="glyph">' + GLYPH[checks[i].level] +
+                    '</span><span>' + escapeHtml(checks[i].message) + '</span></div>'
+            }
+            document.getElementById('checks').innerHTML = html
+
+            document.getElementById('spec-size').textContent =
+                Math.round(report.widthMm) + '×' + Math.round(report.depthMm) + '×' + Math.round(report.heightMm) + ' mm'
+            document.getElementById('spec-mat').textContent = E.estimateFilamentGrams(report.volumeCm3) + ' g'
+            document.getElementById('spec-tris').textContent = report.triangleCount.toLocaleString('en-US')
+
+            var shipping = size.id === 'large' ? 0 : E.SHIPPING_MINOR
+            document.getElementById('price').textContent = E.formatMinor(size.priceMinor + shipping)
+            document.getElementById('price-label').textContent =
+                size.label + ' toy, printed and posted' + (shipping === 0 ? ' (shipping included)' : '')
+            document.getElementById('engine-note').textContent =
+                'STL as written: ' + (stlBytes / 1024).toFixed(0) + ' KB'
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        }
+
+        // ── Renderer ─────────────────────────────────────────────
+        // WebGL with a depth buffer, not a 2D painter.
+        //
+        // The first version of this sorted triangles by centroid depth
+        // and filled them on a 2D canvas. That is fine for a convex
+        // object and wrong for this one: the toy is a UNION of solids
+        // that interpenetrate — a wing rooted in a torso, an eye sunk
+        // into a head — and no per-triangle ordering can resolve two
+        // shapes that pass through each other. The body went
+        // translucent, the wings showed through it, and every shared
+        // edge left a hairline seam from antialiasing. A depth buffer
+        // is the fix, and it costs one shader.
+        var canvas = document.getElementById('view')
+        var gl = null, prog = null, posBuf = null, normBuf = null, vertexCount = 0
+        var yaw = 0.6, pitch = -0.2, autoRotate = true
+        var modelHeight = 100, modelWidth = 50
+
+        var VERT = [
+            'attribute vec3 aPos;',
+            'attribute vec3 aNormal;',
+            'uniform mat4 uProj;',
+            'uniform mat4 uView;',
+            'varying vec3 vN;',
+            'void main() {',
+            '  vN = mat3(uView) * aNormal;',
+            '  gl_Position = uProj * uView * vec4(aPos, 1.0);',
+            '}'
+        ].join('\n')
+
+        var FRAG = [
+            'precision mediump float;',
+            'varying vec3 vN;',
+            'uniform vec3 uColor;',
+            'void main() {',
+            '  vec3 n = normalize(vN);',
+            // key light high and to the left, a soft fill from the
+            // camera, and a faint rim so the silhouette holds on a dark
+            // ground as well as a light one
+            '  float key = max(dot(n, normalize(vec3(-0.45, 0.78, 0.55))), 0.0);',
+            '  float fill = max(dot(n, normalize(vec3(0.5, 0.15, 0.85))), 0.0);',
+            '  float rim = pow(1.0 - max(n.z, 0.0), 3.0) * 0.18;',
+            '  vec3 c = uColor * (0.42 + 0.5 * key + 0.16 * fill) + rim;',
+            '  gl_FragColor = vec4(c, 1.0);',
+            '}'
+        ].join('\n')
+
+        function compile(type, src) {
+            var sh = gl.createShader(type)
+            gl.shaderSource(sh, src)
+            gl.compileShader(sh)
+            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh))
+            return sh
+        }
+
+        function initGL() {
+            try {
+                gl = canvas.getContext('webgl', { antialias: true, alpha: true, preserveDrawingBuffer: true })
+            } catch (err) { gl = null }
+            if (!gl) return false
+            prog = gl.createProgram()
+            gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT))
+            gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG))
+            gl.linkProgram(prog)
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false
+            gl.useProgram(prog)
+            gl.enable(gl.DEPTH_TEST)
+            gl.enable(gl.CULL_FACE)
+            gl.cullFace(gl.BACK)
+            posBuf = gl.createBuffer()
+            normBuf = gl.createBuffer()
+            return true
+        }
+
+        function prepareRender(mesh) {
+            var triCount = Math.floor(mesh.indices.length / 3)
+            var b = E.boundsOf(mesh)
+            modelHeight = b.size[2]
+            modelWidth = Math.max(b.size[0], b.size[1])
+            var cz = b.size[2] / 2
+
+            var pos = new Float32Array(triCount * 9)
+            var norm = new Float32Array(triCount * 9)
+            for (var t = 0; t < triCount; t++) {
+                var vx = [0, 0, 0], vy = [0, 0, 0], vz = [0, 0, 0]
+                for (var c = 0; c < 3; c++) {
+                    var v = mesh.indices[t * 3 + c] * 3
+                    // Model is Z-up sitting on the plate; GL is Y-up, and
+                    // the toy is centred so it hangs in frame.
+                    //
+                    // Note the negated Y: (x, z, y) would swap two axes,
+                    // which mirrors the mesh and reverses every triangle's
+                    // winding — so back-face culling ate the outside of the
+                    // toy and drew its interior, which reads on screen as
+                    // an oddly translucent model. (x, z, -y) is a real
+                    // rotation about X and keeps the winding.
+                    vx[c] = mesh.positions[v]
+                    vy[c] = mesh.positions[v + 2] - cz
+                    vz[c] = -mesh.positions[v + 1]
+                    pos[t * 9 + c * 3] = vx[c]
+                    pos[t * 9 + c * 3 + 1] = vy[c]
+                    pos[t * 9 + c * 3 + 2] = vz[c]
+                }
+                // Flat shading: one face normal, repeated per corner.
+                var ux = vx[1] - vx[0], uy = vy[1] - vy[0], uz = vz[1] - vz[0]
+                var wx = vx[2] - vx[0], wy = vy[2] - vy[0], wz = vz[2] - vz[0]
+                var nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx
+                var len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1
+                nx /= len; ny /= len; nz /= len
+                for (var k = 0; k < 3; k++) {
+                    norm[t * 9 + k * 3] = nx
+                    norm[t * 9 + k * 3 + 1] = ny
+                    norm[t * 9 + k * 3 + 2] = nz
+                }
+            }
+            vertexCount = triCount * 3
+            if (!gl) return
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuf)
+            gl.bufferData(gl.ARRAY_BUFFER, pos, gl.STATIC_DRAW)
+            gl.bindBuffer(gl.ARRAY_BUFFER, normBuf)
+            gl.bufferData(gl.ARRAY_BUFFER, norm, gl.STATIC_DRAW)
+        }
+
+        // ── Tiny column-major 4x4 maths ──────────────────────────
+        function perspective(fovY, aspect, near, far) {
+            var f = 1 / Math.tan(fovY / 2)
+            return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, (2 * far * near) / (near - far), 0]
+        }
+        function multiply(a, b) {
+            var o = new Array(16)
+            for (var c = 0; c < 4; c++) {
+                for (var r = 0; r < 4; r++) {
+                    var sum = 0
+                    for (var k = 0; k < 4; k++) sum += a[k * 4 + r] * b[c * 4 + k]
+                    o[c * 4 + r] = sum
+                }
+            }
+            return o
+        }
+        function rotY(a) {
+            var c = Math.cos(a), s = Math.sin(a)
+            return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]
+        }
+        function rotX(a) {
+            var c = Math.cos(a), s = Math.sin(a)
+            return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]
+        }
+        function translate(x, y, z) {
+            return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]
+        }
+
+        function draw() {
+            var w = canvas.clientWidth, h = canvas.clientHeight
+            if (!w || !h) return
+            var dpr = Math.min(window.devicePixelRatio || 1, 2)
+            var pw = Math.round(w * dpr), ph = Math.round(h * dpr)
+            if (canvas.width !== pw || canvas.height !== ph) {
+                canvas.width = pw
+                canvas.height = ph
+            }
+            if (!gl || !vertexCount) return
+            gl.viewport(0, 0, pw, ph)
+            gl.clearColor(0, 0, 0, 0)
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+            var dist = modelHeight * 2.35
+            var view = multiply(translate(0, 0, -dist), multiply(rotX(pitch), rotY(yaw)))
+            var proj = perspective(0.62, pw / ph, modelHeight * 0.05, dist * 4)
+
+            gl.useProgram(prog)
+            gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uProj'), false, new Float32Array(proj))
+            gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uView'), false, new Float32Array(view))
+            var rgb = hexToRgb(state.palette[state.colorIndex] || '#6c4cf1')
+            gl.uniform3f(gl.getUniformLocation(prog, 'uColor'), rgb.r / 255, rgb.g / 255, rgb.b / 255)
+
+            var aPos = gl.getAttribLocation(prog, 'aPos')
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuf)
+            gl.enableVertexAttribArray(aPos)
+            gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0)
+
+            var aNorm = gl.getAttribLocation(prog, 'aNormal')
+            gl.bindBuffer(gl.ARRAY_BUFFER, normBuf)
+            gl.enableVertexAttribArray(aNorm)
+            gl.vertexAttribPointer(aNorm, 3, gl.FLOAT, false, 0, 0)
+
+            gl.drawArrays(gl.TRIANGLES, 0, vertexCount)
+        }
+
+        function hexToRgb(hex) {
+            var h = String(hex).replace('#', '')
+            if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]
+            return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16) }
+        }
+
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        var glReady = initGL()
+        function loop() {
+            if (autoRotate && !reduced) yaw += 0.005
+            draw()
+            requestAnimationFrame(loop)
+        }
+
+        // drag to turn
+        var dragging = false, lastX = 0, lastY = 0
+        canvas.addEventListener('pointerdown', function (e) {
+            dragging = true; autoRotate = false; lastX = e.clientX; lastY = e.clientY
+            canvas.setPointerCapture(e.pointerId)
+        })
+        canvas.addEventListener('pointermove', function (e) {
+            if (!dragging) return
+            yaw += (e.clientX - lastX) * 0.01
+            pitch = Math.max(-0.9, Math.min(0.5, pitch + (e.clientY - lastY) * 0.006))
+            lastX = e.clientX; lastY = e.clientY
+        })
+        canvas.addEventListener('pointerup', function () { dragging = false })
+        canvas.addEventListener('pointercancel', function () { dragging = false })
+
+        // ── Thumbnails: drawing → design → toy ───────────────────
+        function drawThumbs() {
+            paintDrawingThumb()
+            paintDesignThumb()
+            paintToyThumb()
+        }
+
+        function thumbCanvas(id) {
+            var host = document.getElementById(id)
+            var c = host.querySelector('canvas')
+            if (!c) { c = document.createElement('canvas'); c.width = 88; c.height = 88; host.appendChild(c) }
+            return c
+        }
+
+        function paintDrawingThumb() {
+            var c = thumbCanvas('thumb-drawing'), g = c.getContext('2d')
+            g.clearRect(0, 0, 88, 88)
+            g.fillStyle = '#fff'; g.fillRect(0, 0, 88, 88)
+            if (state.drawing) { g.drawImage(state.drawing, 0, 0, 88, 88); return }
+            // A child's drawing, drawn the way a child draws: one wobbly
+            // closed line, features that do not line up.
+            g.strokeStyle = '#2a2438'; g.lineWidth = 2.4; g.lineCap = 'round'
+            g.beginPath()
+            g.moveTo(30, 66); g.bezierCurveTo(20, 40, 30, 22, 44, 22)
+            g.bezierCurveTo(60, 22, 68, 40, 58, 66); g.closePath(); g.stroke()
+            g.fillStyle = state.palette[state.colorIndex] || '#6c4cf1'
+            g.beginPath(); g.arc(38, 38, 4.4, 0, 6.3); g.fill()
+            g.beginPath(); g.arc(50, 36, 3.2, 0, 6.3); g.fill()
+            g.beginPath(); g.arc(44, 46, 2.6, 0, 6.3); g.fill()
+            g.strokeStyle = '#ffb627'; g.lineWidth = 3
+            g.beginPath(); g.moveTo(34, 22); g.lineTo(31, 11); g.lineTo(42, 17); g.stroke()
+        }
+
+        function paintDesignThumb() {
+            var c = thumbCanvas('thumb-design'), g = c.getContext('2d')
+            var grad = g.createRadialGradient(44, 32, 4, 44, 44, 62)
+            grad.addColorStop(0, '#ffffff'); grad.addColorStop(1, '#e9e2ff')
+            g.fillStyle = grad; g.fillRect(0, 0, 88, 88)
+            g.save(); g.translate(10, 10); g.scale(0.78, 0.78)
+            if (state.drawing) { g.drawImage(state.drawing, 0, 0, 88, 88) }
+            else {
+                var col = state.palette[state.colorIndex] || '#6c4cf1'
+                g.fillStyle = col
+                g.beginPath(); g.ellipse(44, 62, 24, 19, 0, 0, 6.3); g.fill()
+                g.beginPath(); g.arc(44, 33, 21, 0, 6.3); g.fill()
+                g.fillStyle = '#fff'
+                g.beginPath(); g.arc(36, 31, 5, 0, 6.3); g.fill()
+                g.beginPath(); g.arc(50, 31, 5, 0, 6.3); g.fill()
+            }
+            g.restore()
+        }
+
+        function paintToyThumb() {
+            var c = thumbCanvas('thumb-toy'), g = c.getContext('2d')
+            var grad = g.createLinearGradient(0, 0, 0, 88)
+            grad.addColorStop(0, '#f6f2ff'); grad.addColorStop(1, '#ded4ff')
+            g.fillStyle = grad; g.fillRect(0, 0, 88, 88)
+            // The live viewport, scaled down — genuinely the same model.
+            // Drawn right after a fresh render, because a WebGL drawing
+            // buffer is cleared once the frame is presented.
+            try { draw(); g.drawImage(canvas, 0, 0, 88, 88) } catch (err) { /* not ready yet */ }
+            document.getElementById('thumb-toy-label').textContent = currentSize().label + ' tall'
+        }
+
+        // ── Palette sampling, same rules as the server ───────────
+        function samplePalette(img) {
+            var c = document.createElement('canvas')
+            c.width = 48; c.height = 48
+            var g = c.getContext('2d', { willReadFrequently: true })
+            g.drawImage(img, 0, 0, 48, 48)
+            var data = g.getImageData(0, 0, 48, 48).data
+            var buckets = {}
+            for (var i = 0; i < data.length; i += 4) {
+                var r = data[i], gg = data[i + 1], b = data[i + 2]
+                var max = Math.max(r, gg, b), min = Math.min(r, gg, b)
+                if (max > 235 && max - min < 25) continue    // the paper
+                if (max < 55) continue                        // the pencil
+                var key = Math.round(r / 32) + '_' + Math.round(gg / 32) + '_' + Math.round(b / 32)
+                var bucket = buckets[key] || (buckets[key] = { n: 0, r: 0, g: 0, b: 0 })
+                bucket.n++; bucket.r += r; bucket.g += gg; bucket.b += b
+            }
+            var list = Object.keys(buckets).map(function (k) { return buckets[k] })
+            list.sort(function (a, b) { return b.n - a.n })
+            var out = list.slice(0, 5).map(function (c2) {
+                return '#' + [c2.r / c2.n, c2.g / c2.n, c2.b / c2.n].map(function (v) {
+                    return Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')
+                }).join('')
+            })
+            return out.length ? out : state.palette
+        }
+
+        // ── Controls ─────────────────────────────────────────────
+        function wireSegmented(id, onPick, mode) {
+            var host = document.getElementById(id)
+            host.addEventListener('click', function (e) {
+                var btn = e.target.closest('button')
+                if (!btn) return
+                if (mode === 'multi') {
+                    var on = btn.getAttribute('aria-pressed') === 'true'
+                    btn.setAttribute('aria-pressed', on ? 'false' : 'true')
+                } else {
+                    var all = host.querySelectorAll('button')
+                    for (var i = 0; i < all.length; i++) all[i].setAttribute('aria-pressed', 'false')
+                    btn.setAttribute('aria-pressed', 'true')
+                }
+                onPick(btn.dataset.v, btn.getAttribute('aria-pressed') === 'true')
+                rebuild()
+            })
+        }
+
+        wireSegmented('ctl-body', function (v) { state.bodyPlan = v })
+        wireSegmented('ctl-eyes', function (v) { state.eyes = Number(v) })
+        wireSegmented('ctl-extras', function (v, on) { state.extras[v] = on }, 'multi')
+
+        // sizes come from the real price table
+        var sizeHost = document.getElementById('ctl-size')
+        E.SIZES.forEach(function (s) {
+            var b = document.createElement('button')
+            b.type = 'button'
+            b.dataset.v = s.id
+            b.textContent = s.label
+            b.setAttribute('aria-pressed', String(s.id === state.sizeId))
+            sizeHost.appendChild(b)
+        })
+        sizeHost.addEventListener('click', function (e) {
+            var btn = e.target.closest('button')
+            if (!btn) return
+            var all = sizeHost.querySelectorAll('button')
+            for (var i = 0; i < all.length; i++) all[i].setAttribute('aria-pressed', 'false')
+            btn.setAttribute('aria-pressed', 'true')
+            state.sizeId = btn.dataset.v
+            var busy = document.getElementById('busy')
+            busy.classList.add('on')
+            // Let the browser paint the busy state before a rebuild that
+            // blocks for a beat on the thickness sampling.
+            setTimeout(function () { rebuild(); busy.classList.remove('on') }, 30)
+        })
+
+        function paintSwatches() {
+            var host = document.getElementById('ctl-palette')
+            host.innerHTML = ''
+            state.palette.forEach(function (hex, i) {
+                var b = document.createElement('button')
+                b.type = 'button'
+                b.className = 'swatch'
+                b.style.background = hex
+                b.title = hex
+                b.setAttribute('aria-label', 'Use ' + hex)
+                b.setAttribute('aria-pressed', String(i === state.colorIndex))
+                b.addEventListener('click', function () {
+                    state.colorIndex = i
+                    paintSwatches()
+                    rebuild()
+                })
+                host.appendChild(b)
+            })
+        }
+
+        var pickedFile = null
+
+        document.getElementById('drawing-input').addEventListener('change', function (e) {
+            var file = e.target.files && e.target.files[0]
+            if (!file) return
+            pickedFile = file
+            var img = new Image()
+            img.onload = function () {
+                state.drawing = img
+                state.palette = samplePalette(img)
+                state.colorIndex = 0
+                paintSwatches()
+                rebuild()
+            }
+            img.src = URL.createObjectURL(file)
+            var actions = document.getElementById('ai-actions')
+            if (sampleApi) actions.hidden = false
+        })
+
+        // ── The vision step, for real ────────────────────────────
+        //
+        // Same system prompt as the API route, same normaliser on the
+        // way back. The only difference from production is the
+        // transport: the viewer's own Claude account answers instead of
+        // our key. Consent is asked on the first call, which is why this
+        // hangs off a button rather than the file picker.
+        var sampleApi = null
+        var dbApi = null
+
+        function extractJson(text) {
+            if (!text) return {}
+            var fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+            var candidate = fenced ? fenced[1] : text
+            var start = candidate.indexOf('{')
+            var end = candidate.lastIndexOf('}')
+            if (start === -1 || end <= start) return {}
+            try { return JSON.parse(candidate.slice(start, end + 1)) } catch (err) { return {} }
+        }
+
+        function countIn(text) {
+            var words = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 }
+            var digits = String(text).match(/\b(\d{1,2})\b/)
+            if (digits) return Number(digits[1])
+            for (var w in words) if (new RegExp('\\b' + w + '\\b', 'i').test(text)) return words[w]
+            return 0
+        }
+
+        function applyAiDna(d) {
+            state.aiDna = d
+            if (d.palette && d.palette.length) {
+                state.palette = d.palette
+                state.colorIndex = 0
+                paintSwatches()
+            }
+            state.bodyPlan = d.bodyPlan === 'quadruped' ? 'quadruped' : d.bodyPlan === 'blob' ? 'blob' : 'biped'
+            // Reflect what Claude found in the controls, so they show the
+            // reading rather than contradicting it.
+            var found = { horns: false, wings: false, tail: false, ears: false }
+            var eyes = 0
+            d.features.forEach(function (f) {
+                var k = f.kind
+                if (/eye/.test(k)) eyes = Math.max(eyes, countIn(f.description) || 2)
+                if (/horn|antler|spike/.test(k)) found.horns = true
+                if (/wing/.test(k)) found.wings = true
+                if (/tail/.test(k)) found.tail = true
+                if (/ear/.test(k)) found.ears = true
+            })
+            state.eyes = Math.min(3, Math.max(1, eyes || 2))
+            state.extras = found
+            syncControls()
+
+            document.getElementById('ai-name').textContent = d.name
+            document.getElementById('ai-summary').textContent = d.summary
+            var chips = d.features.map(function (f) {
+                return '<span class="chip" style="font-size:12px;padding:5px 10px">' +
+                    escapeHtml(f.description) + '</span>'
+            }).join('')
+            document.getElementById('ai-features').innerHTML = chips
+            var conf = Math.round(d.confidence * 100)
+            document.getElementById('ai-confidence').textContent =
+                conf >= 60
+                    ? 'Read with ' + conf + '% confidence.'
+                    : 'Read with only ' + conf + '% confidence — a brighter photo of the drawing lying flat would do better.'
+            document.getElementById('ai-result').hidden = false
+            rebuild()
+        }
+
+        function syncControls() {
+            var body = document.getElementById('ctl-body')
+            body.querySelectorAll('button').forEach(function (b) {
+                b.setAttribute('aria-pressed', String(b.dataset.v === state.bodyPlan))
+            })
+            document.getElementById('ctl-eyes').querySelectorAll('button').forEach(function (b) {
+                b.setAttribute('aria-pressed', String(Number(b.dataset.v) === state.eyes))
+            })
+            document.getElementById('ctl-extras').querySelectorAll('button').forEach(function (b) {
+                b.setAttribute('aria-pressed', String(!!state.extras[b.dataset.v]))
+            })
+        }
+
+        function showAiError(message) {
+            document.getElementById('ai-error-text').textContent = message
+            document.getElementById('ai-error').hidden = false
+        }
+
+        document.getElementById('ai-read').addEventListener('click', function () {
+            if (!sampleApi || !pickedFile) return
+            var btn = this
+            document.getElementById('ai-error').hidden = true
+            btn.disabled = true
+            btn.textContent = 'Reading the drawing…'
+            sampleApi([{ role: 'user', content: E.DNA_SYSTEM_PROMPT + '\n\nRecord this character.' }], {
+                images: pickedFile,
+                modelTier: 'default',
+            })
+                .then(function (res) {
+                    applyAiDna(E.normalizeDna(extractJson(res.text)))
+                })
+                .catch(function (err) {
+                    var code = err && err.code
+                    if (code === 'not_granted') {
+                        document.getElementById('ai-card').querySelector('#ai-state').textContent = 'not available'
+                        document.getElementById('ai-actions').hidden = true
+                    } else if (code === 'rate_limited') {
+                        showAiError('Claude is busy right now. Give it a minute and try again.')
+                    } else {
+                        showAiError('That read did not come back. Try a clearer photo of the drawing.')
+                    }
+                })
+                .then(function () {
+                    btn.disabled = false
+                    btn.textContent = 'Read it again'
+                })
+        })
+
+        // ── Orders, kept in the page's own store ─────────────────
+        function renderOrders(snap) {
+            var host = document.getElementById('orders-list')
+            if (!snap.docs.length) {
+                host.innerHTML = '<p style="font-size:13px;color:var(--ink-3)">No orders yet.</p>'
+                return
+            }
+            host.innerHTML = snap.docs.map(function (doc) {
+                var o = doc.data() || {}
+                var status = E.currentStatus(o.history || [])
+                var meta = E.statusMeta(status)
+                var next = E.STATUS_FLOW.filter(function (st) { return E.canTransition(status, st.id) })[0]
+                return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px 12px">' +
+                    '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">' +
+                    '<b style="font-size:14px">' + escapeHtml(o.label || 'Untitled toy') + '</b>' +
+                    '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:13px">' +
+                    escapeHtml(o.price || '') + '</span></div>' +
+                    '<div style="font-size:12.5px;color:var(--ink-3);margin-top:2px">' +
+                    escapeHtml(o.character || '') + ' · ' + (o.heightMm || 0) + 'mm</div>' +
+                    '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:9px">' +
+                    '<span class="verdict ' + (status === 'delivered' ? 'ok' : 'no') + '">' + meta.label + '</span>' +
+                    (next
+                        ? '<button type="button" class="tf-next" data-id="' + doc.id + '" data-to="' + next.id +
+                          '" style="border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer">→ ' +
+                          next.label + '</button>'
+                        : '') +
+                    '</div></div>'
+            }).join('')
+
+            host.querySelectorAll('.tf-next').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var doc = snap.docs.filter(function (d) { return d.id === btn.dataset.id })[0]
+                    if (!doc || !dbApi) return
+                    var o = doc.data() || {}
+                    // The real forward-only state machine: an illegal move
+                    // returns null and nothing is written.
+                    var history = E.applyTransition(o.history || [], btn.dataset.to, 'demo')
+                    if (!history) return
+                    dbApi.doc('orders/' + doc.id).update({ history: history })
+                })
+            })
+        }
+
+        document.getElementById('place-order').addEventListener('click', function () {
+            if (!dbApi) return
+            var size = currentSize()
+            var shipping = size.id === 'large' ? 0 : E.SHIPPING_MINOR
+            var d = dna()
+            var id = E.newId('ord', 8)
+            dbApi.doc('orders/' + id).set({
+                label: (document.getElementById('order-label').value || d.name).slice(0, 40),
+                character: d.summary.slice(0, 120),
+                sizeId: size.id,
+                heightMm: size.heightMm,
+                price: E.formatMinor(size.priceMinor + shipping),
+                history: [{ status: 'creating_design', at: new Date().toISOString(), by: 'demo' }],
+                createdAt: new Date().toISOString(),
+            }).catch(function () { /* a read-only viewer simply cannot place one */ })
+            document.getElementById('order-label').value = ''
+        })
+
+        // ── Light the capabilities up when they answer ───────────
+        if (window.claude && typeof window.claude.use === 'function') {
+            window.claude.use('sample').then(function (api) {
+                var stateLabel = document.getElementById('ai-state')
+                if (!api) {
+                    stateLabel.textContent = 'colours only'
+                    document.getElementById('ai-hint').textContent = ''
+                    return
+                }
+                return api.limits().catch(function () { return null }).then(function (limits) {
+                    if (!limits || !limits.images) {
+                        stateLabel.textContent = 'colours only'
+                        return
+                    }
+                    sampleApi = api
+                    stateLabel.textContent = 'Claude vision'
+                    if (pickedFile) document.getElementById('ai-actions').hidden = false
+                })
+            }).catch(function () { /* absence is a normal state */ })
+
+            window.claude.use('db').then(function (api) {
+                if (!api) return
+                dbApi = api
+                document.getElementById('orders-card').hidden = false
+                api.collection('orders').orderBy('createdAt', 'desc').limit(12).onSnapshot(renderOrders, function () { })
+            }).catch(function () { })
+        } else {
+            document.getElementById('ai-state').textContent = 'colours only'
+        }
+
+        // ── Go ───────────────────────────────────────────────────
+        paintSwatches()
+        rebuild()
+        loop()
+        // The toy thumbnail mirrors the live viewport, so refresh it once
+        // the first frames exist.
+        setTimeout(paintToyThumb, 400)
+        setInterval(paintToyThumb, 4000)
+    })()
+</script>
