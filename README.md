@@ -16,6 +16,14 @@ cp .env.example .env.local     # Firebase is the only required part
 npm run dev                    # http://localhost:3000
 ```
 
+Already have a Firebase service-account key? Turn it straight into the
+block Vercel wants — private key escaped the way it needs to be, demo
+mode on so no AI keys are required:
+
+```bash
+node scripts/vercel-env.mjs ~/Downloads/<project>-firebase-adminsdk.json --admin you@example.com
+```
+
 Set `TOYFOUNDRY_DEMO=1` and you can walk the entire flow with no AI keys
 at all — see [Demo mode](#demo-mode-and-what-it-actually-means).
 
